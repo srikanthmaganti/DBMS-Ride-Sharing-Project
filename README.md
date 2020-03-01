@@ -1,6 +1,6 @@
 # DBMS-Ride-Sharing-Project
 
-# Team members: 
+## Team members: 
 
 Deblina Roy
 
@@ -9,7 +9,7 @@ Peihong Man
 Srikanth Maganti
 
 
-## Initial running result for the first 5min time window in Jan 1st, 2015: 
+### Initial running result for the first 5min time window in Jan 1st, 2015: 
 
 Total time saved: 60.0min. 
 
@@ -22,3 +22,5 @@ For example, "001002001" means a possible ride sharing between 001 and 002, with
 Time Taken to load data: 1.337s
 
 Time Taken to run algorithm: 1.342s
+
+#### Detailed visualization result can be found in "Graph"
