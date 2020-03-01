@@ -1,5 +1,14 @@
 # DBMS-Ride-Sharing-Project
 
+# Team members: 
+
+Deblina Roy
+
+Peihong Man
+
+Srikanth Maganti
+
+
 ## Initial running result for the first 5min time window in Jan 1st, 2015: 
 
 Total time saved: 60.0min. 
