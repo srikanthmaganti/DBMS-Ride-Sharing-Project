@@ -23,4 +23,4 @@ Time Taken to load data: 1.337s
 
 Time Taken to run algorithm: 1.342s
 
-#### Detailed visualization result can be found in "Graph"
+#### Detailed visualization result can be found in folder "Graph".
