@@ -21,6 +21,6 @@ For example, "001002001" means a possible ride sharing between 001 and 002, with
 
 Time Taken to load data: 1.337s
 
-Time Taken to run algorithm: 1.342s
+Time Taken to run algorithm: 0.006s
 
 #### Detailed visualization result can be found in folder "Graph".
