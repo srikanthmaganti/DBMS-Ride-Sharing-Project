@@ -6,22 +6,18 @@ import pandas as pd
 import json
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+import requests
 
 
-class LoadData: 
-    """ Load the coordinates data and the triptime data"""
+class GetCutPoints:
+    """ Get the index number of the first people in each time window"""
     
-    def __init__(self):
-        self.df_cor, self.df_time = None, None
-        self.laguardia = [40.7769, -73.874]
-        
-        # self.timewindows, self.cutpoints = self.get_cutdown_points()
+    def __init__(self): 
+        self.timewindows, self.cutpoints = self.get_cutdown_points()
         # self.plot_request_desnity()
-        self.load_cor_data()
-        self.load_time_data()
-        # self.plot_points()
-        
+    
     def get_cutdown_points(self):
+        # Time windows: 2min, 5min, 7min, 10min
         timewindows = [timedelta(minutes=2), timedelta(minutes=5), timedelta(minutes=7), timedelta(minutes=10)]
         cutpoints = [[] for _ in range(4)]
         df = pd.read_csv("df_sorted_jan_pickup.csv")
@@ -36,12 +32,24 @@ class LoadData:
         for index, row in self.df_request_time.iterrows(): 
             time = datetime.strptime(row['tpep_pickup_datetime'], '%Y-%m-%d %H:%M:%S')
             for ind, timewindow in enumerate(timewindows): 
+                
                 if time >= currenttimes[ind]:
-                    cutpoints[ind].append(index)
                     currenttimes[ind] += timewindow
-        for cutpoint in cutpoints:             
+                    if time < currenttimes[ind]:
+                        cutpoints[ind].append(index)
+                    else: 
+                        while time >= currenttimes[ind]: 
+                            currenttimes[ind] += timewindow
+        cutpoints_temp = [[] for _ in range(4)]
+        for i, cutpoint in enumerate(cutpoints):             
             cutpoint.append(index)
-        
+            for j, cut in enumerate(cutpoint):
+                if cut == cutpoint[-1]:
+                    cutpoints_temp[i].append(cut)
+                elif cut + 1 != cutpoint[j+1]:
+                    cutpoints_temp[i].append(cut)
+        cutpoints = cutpoints_temp
+                
         return timewindows, cutpoints
     
     def plot_request_desnity(self): 
@@ -55,21 +63,23 @@ class LoadData:
         
         plot1 = self.df_request_time.groupby([self.df_request_time.index.date]).count().plot(kind='bar', figsize=(10,7))
         fig1 = plot1.get_figure()
-        fig1.savefig("3.png", dpi=300)
+        fig1.savefig("4.png", dpi=300)
         plt.show()
         plot2 = self.df_request_time.groupby([self.df_request_time.index.hour]).count().plot(kind='bar', figsize=(10,7))
         fig2 = plot2.get_figure()
-        fig2.savefig("4.png", dpi=300)
-        plt.show()          
+        fig2.savefig("5.png", dpi=300)
+        plt.show()  
     
-    def load_cor_data(self):
+    def return_cutpoints(self):
+        return self.cutpoints
+    
+class ReadDataFile:
+    def __init__(self):
         df = pd.read_csv("df_sorted_jan_pickup.csv")
-        # print(df)
-       
-        self.df_cor=df[['dropoff_latitude','dropoff_longitude']][:13]
-        # self.df_cor=df[['dropoff_latitude','dropoff_longitude']]
+        self.df_cor=df[['dropoff_latitude','dropoff_longitude']]
         self.df_cor.rename(columns = {'dropoff_latitude':'latitude'}, inplace = True) 
         self.df_cor.rename(columns = {'dropoff_longitude':'longitude'}, inplace = True) 
+        # Drop invalid datapoints
         indexNames = self.df_cor[self.df_cor['latitude'] == 0].index
         self.df_cor.drop(indexNames , inplace=True)
         indexNames = self.df_cor[self.df_cor['latitude'] < 38].index
@@ -80,11 +90,54 @@ class LoadData:
         self.df_cor.drop(indexNames , inplace=True)
         indexNames = self.df_cor[self.df_cor['longitude'] >(-70)].index
         self.df_cor.drop(indexNames , inplace=True)
+    
+    def return_df_cor(self):
+        return self.df_cor
+        
+class LoadData: 
+    """ Load the coordinates data and the triptime data"""
+    
+    def __init__(self, df_cor, firstindex, lastindex):
+        self.firstindex = firstindex # First datapoint in this timewindow
+        self.lastindex = lastindex  # Second datapoint in this timewindow
+        
+        self.df_cor = df_cor
+        self.df_time = None
+        self.laguardia = [40.7769, -73.874]
+        self.url = "https://graphhopper.com/api/1/matrix"
+        
+        self.get_cor_data()    # Load coordinates data into dataframe
+        self.get_time_data()    # Get the corresponding time matrix from graphhopper
+        # self.load_time_data()
+        # self.plot_points()
+    
+    def get_cor_data(self):
+        self.df_cor=self.df_cor[self.firstindex:self.lastindex]
         # print(self.df_cor)
         # BBox = ((self.df_cor.longitude.min(), self.df_cor.longitude.max(), self.df_cor.latitude.min(), self.df_cor.latitude.max()))
         # (-79.4538803100586, -72.51884460449219, 39.81238174438477, 41.63334655761719) for all datapoints
         # print(BBox)
         
+    def get_time_data(self): 
+        lat_long=self.df_cor.values.tolist()
+        lat_long=[self.laguardia]+lat_long
+        lat_long_list = ["{}, {}".format(i[0], i[1]) for i in lat_long]
+        # print(lat_long_list)
+        Dict = {"type":"json","vehicle":"car","debug":"true","out_array":["weights","times","distances"],"key":"b43d5095-eb45-421b-965a-b67ead31a572"}
+        Dict.update( {"point" : lat_long_list} )
+        # print(Dict.get("point"))
+        while True: 
+            try: 
+                response = requests.request("GET", self.url, params=Dict)
+
+                parsed = json.loads(response.text)
+                self.df_time = pd.DataFrame(parsed["times"])
+                # print(json.dumps(parsed, indent=4, sort_keys=True))
+                break
+            except KeyError: 
+                print("Timeout. Retrying...")
+                time.sleep(3)
+      
     def load_time_data(self):
         
         data = json.load(open('response.json'))
@@ -114,14 +167,14 @@ class LoadData:
         plt.show()
         # fig.savefig('{}.png'.format("1"), dpi=300)
     
-    def export_df(self):
+    def return_df(self):
         return self.df_cor, self.df_time
         
     
-class RideSharing:
+class RideSharingAlgorithm:
     """Apply constraints and find the ride sharing plan (rsp)"""
     
-    def __init__(self, df_cor, df_time, algorithm=2):
+    def __init__(self, df_cor, df_time, algorithm=0):
         self.df_cor, self.df_time = df_cor, df_time
         self.num_data = len(self.df_cor)
         self.laguardia = [40.7769, -73.874]
@@ -165,8 +218,8 @@ class RideSharing:
                         self.possible_shares[id1] = t_db - t_ab
                     else: # Can only go to B first
                         self.possible_shares[id2] = t_da - t_ba
-        print("All possible ride sharings: ")
-        print(self.possible_shares)
+        # print("All possible ride sharings: ")
+        # print(self.possible_shares)
         # print(len(self.possible_shares))
     
     def plot_possible_shares(self): 
@@ -204,10 +257,10 @@ class RideSharing:
         
         self.depth_first_search(total_saved, shared_rides, shared_people)
         
-        print("Total time saved: {:.1f}min. ".format(self.total_saved_max/60))
-        print("People participated in the shared rides{}".format(self.shared_people_max))
-        print("Shared rides: {}".format(self.shared_rides_max))
-        print('For example, "001002001" means a possible ride sharing between 001 and 002, with going to 001 first')
+        # print("Total time saved: {:.1f}min. ".format(self.total_saved_max/60))
+        # print("People participated in the shared rides{}".format(self.shared_people_max))
+        # print("Shared rides: {}".format(self.shared_rides_max))
+        # print('For example, "001002001" means a possible ride sharing between 001 and 002, with going to 001 first')
         
     def depth_first_search(self, total_saved, shared_rides, shared_people): 
         more_to_share = False
@@ -249,14 +302,45 @@ class RideSharing:
         ax.set_ylim(BBox[2],BBox[3])
         ax.imshow(ruh_m, zorder=0, extent = BBox, aspect= ratio*1.8)
         plt.show()
-        # fig.savefig('{}.png'.format("3"), dpi=300)                    
+        # fig.savefig('{}.png'.format("3"), dpi=300)   
+    
+    def return_report(self):
+        return self.total_saved_max/60, len(self.shared_rides_max)
+    
+    
+class Batchprocess:
+    def __init__(self, df_cor, cutpoints): 
+        self.df_cor = df_cor
+        self.cutpoints = cutpoints
+        self.cut_windows = [5, 7, 10]
+        self.saved_time_totals = []
+        self.saved_rides_totals = []
+        
+        for ind_window in range(len(self.cut_windows)):
+            saved_time_total, saved_rides_total = 0, 0
+            cutpoint = self.cutpoints[ind_window][0:int(60*24/self.cut_windows[ind_window])]
+            for i, cut in enumerate(cutpoint): 
+                if i == 0:
+                    self.df_cor_new, self.df_time_new = LoadData(self.df_cor, 0, cut).return_df()
+                else: 
+                    self.df_cor_new, self.df_time_new = LoadData(self.df_cor, cutpoint[i-1], cut).return_df()
+                    
+                saved_time, saved_rides = RideSharingAlgorithm(self.df_cor_new, self.df_time_new, algorithm=0).return_report()
+                saved_time_total += saved_time
+                saved_rides_total += saved_rides
+                print("Total time saved: {:.1f}min. Total number of trips saved: {}. {:.1f}% \r".format(saved_time_total, saved_rides, i/len(cutpoint)*100))
+            self.saved_time_totals.append(saved_time_total)              
+            self.saved_rides_totals.append(saved_rides_total)  
+        print(self.saved_time_totals)           
+        print(self.saved_rides_totals)            
                                 
                 
 def main():
     start_time = time.time()
-    df_cor, df_time = LoadData().export_df()
+    df_cor = ReadDataFile().return_df_cor()
+    cutpoints = GetCutPoints().return_cutpoints()
     after_load_time = time.time()
-    RideSharing(df_cor, df_time, algorithm=0)
+    Batchprocess(df_cor, cutpoints)
     end_time = time.time()
     print("Time Taken to load data: {:.3f}s".format(after_load_time-start_time))
     print("Time Taken to run algorithm: {:.3f}s".format(end_time-after_load_time))
