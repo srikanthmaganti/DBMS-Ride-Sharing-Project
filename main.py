@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import json
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 
 
 class LoadData: 
@@ -14,13 +15,57 @@ class LoadData:
         self.df_cor, self.df_time = None, None
         self.laguardia = [40.7769, -73.874]
         
+        # self.timewindows, self.cutpoints = self.get_cutdown_points()
+        # self.plot_request_desnity()
         self.load_cor_data()
         self.load_time_data()
         # self.plot_points()
+        
+    def get_cutdown_points(self):
+        timewindows = [timedelta(minutes=2), timedelta(minutes=5), timedelta(minutes=7), timedelta(minutes=10)]
+        cutpoints = [[] for _ in range(4)]
+        df = pd.read_csv("df_sorted_jan_pickup.csv")
+        # print(df)
+        self.df_request_time = df[['tpep_pickup_datetime']]
+        # print(self.df_request_time)
+        # print(self.df_request_time.loc[0, 'tpep_pickup_datetime'])
+        currenttimes = []
+        for ind, timewindow in enumerate(timewindows): 
+                currenttimes.append(datetime.strptime("2015-01-01 00:00:00", '%Y-%m-%d %H:%M:%S') + timewindow)
+                
+        for index, row in self.df_request_time.iterrows(): 
+            time = datetime.strptime(row['tpep_pickup_datetime'], '%Y-%m-%d %H:%M:%S')
+            for ind, timewindow in enumerate(timewindows): 
+                if time >= currenttimes[ind]:
+                    cutpoints[ind].append(index)
+                    currenttimes[ind] += timewindow
+        for cutpoint in cutpoints:             
+            cutpoint.append(index)
+        
+        return timewindows, cutpoints
+    
+    def plot_request_desnity(self): 
+        df = pd.read_csv("df_sorted_jan_pickup.csv")
+        self.df_request_time = df[['tpep_pickup_datetime', "RateCodeID"]]
+        self.df_request_time.rename(columns = {"tpep_pickup_datetime":'Pickup_Time'}, inplace = True) 
+        self.df_request_time.rename(columns = {"RateCodeID":'Count'}, inplace = True) 
+        self.df_request_time['Pickup_Time'] = pd.to_datetime(self.df_request_time['Pickup_Time'])
+        self.df_request_time = self.df_request_time.set_index('Pickup_Time')
+        # print(self.df_request_time.groupby([self.df_request_time.index.date]))
+        
+        plot1 = self.df_request_time.groupby([self.df_request_time.index.date]).count().plot(kind='bar', figsize=(10,7))
+        fig1 = plot1.get_figure()
+        fig1.savefig("3.png", dpi=300)
+        plt.show()
+        plot2 = self.df_request_time.groupby([self.df_request_time.index.hour]).count().plot(kind='bar', figsize=(10,7))
+        fig2 = plot2.get_figure()
+        fig2.savefig("4.png", dpi=300)
+        plt.show()          
     
     def load_cor_data(self):
         df = pd.read_csv("df_sorted_jan_pickup.csv")
         # print(df)
+       
         self.df_cor=df[['dropoff_latitude','dropoff_longitude']][:13]
         # self.df_cor=df[['dropoff_latitude','dropoff_longitude']]
         self.df_cor.rename(columns = {'dropoff_latitude':'latitude'}, inplace = True) 
@@ -214,7 +259,7 @@ def main():
     RideSharing(df_cor, df_time, algorithm=0)
     end_time = time.time()
     print("Time Taken to load data: {:.3f}s".format(after_load_time-start_time))
-    print("Time Taken to run algorithm: {:.3f}s".format(end_time-start_time))
+    print("Time Taken to run algorithm: {:.3f}s".format(end_time-after_load_time))
 
 
 if __name__ == '__main__':
