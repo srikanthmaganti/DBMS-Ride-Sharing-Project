@@ -12,10 +12,18 @@ from ride_sharing import RideSharingAlgorithm
 from pathlib import Path
 
 
+class PreloadData:
+    def __init__(self): 
+        self.df_center_cor = pd.read_csv("center_points.csv")
+        self.full_time_matrix = np.genfromtxt('time_matrix.csv', delimiter=',')
+    
+    def return_data(self): 
+        return self.df_center_cor, self.full_time_matrix
+        
 class PlotAWindow:
     """Pick a pool window, plot all ride sharing result. """
     
-    def __init__(self, year, month, day, hour_start, min_start, pool_size, savefig = False, batch=False):
+    def __init__(self, year, month, day, hour_start, min_start, pool_size, df_center_cor = "", full_time_matrix = "", savefig = False, batch=False):
         self.total_start_time = time.time()
         self.year = year
         self.month = month
@@ -36,7 +44,10 @@ class PlotAWindow:
         self.rides_total = [len(self.df_cor1), len(self.df_cor2)]
         self.df_titles = ["pickup", "dropoff"]
         self.dfs = [self.df_cor1, self.df_cor2]
-        self.df_center_cor = pd.read_csv("center_points.csv")
+        if type(df_center_cor) == pd.DataFrame:
+            self.df_center_cor = pd.read_csv("center_points.csv")
+        else: 
+            self.df_center_cor = df_center_cor
         self.list_of_centers = []
         self.algorithms = []
         for i in range(len(self.df_center_cor)): 
@@ -47,7 +58,10 @@ class PlotAWindow:
         self.longlimit = 0.005
         self.latlimit = 0.005
         # Load the time matrix with transportation time between every center pairs: 
-        self.full_time_matrix = np.genfromtxt('time_matrix.csv', delimiter=',')
+        if type(full_time_matrix) == pd.DataFrame:
+            self.full_time_matrix = np.genfromtxt('time_matrix.csv', delimiter=',')
+        else:
+            self.full_time_matrix = full_time_matrix
         
         self.saved_totals = {"saved_time_pickup":0, "saved_rides_pickup":0, "saved_time_dropoff":0, "saved_rides_dropoff":0, 
                         "av_per_saved_time_pickup":0, "av_per_saved_rides_pickup":0, "av_per_saved_time_dropoff":0, "av_per_saved_rides_dropoff":0,
@@ -249,14 +263,28 @@ class PlotAWindow:
 
 def main():
     # Pick a pool window and show result for that day
-    year = "2016"
-    month = "may"
-    day = "20"
-    hour_start = 17
-    min_start = 30
-    pool_size = 5
-    savefig = True
-    PlotAWindow(year=year, month=month, day=day, hour_start=hour_start, min_start=min_start, savefig = savefig, pool_size=pool_size, batch=False)
+    # year = "2016"
+    # month = "may"
+    # day = "20"
+    # hour_start = 17
+    # min_start = 30
+    # pool_size = 5
+    df_center_cor, full_time_matrix = PreloadData().return_data()
+    while True: 
+        con = input("Continue ? (y or n)")
+        if con == "y": 
+            year = input("Pick a year (for example: 2016): ")
+            month = input("Pick a month (for example: may):")
+            day = input("Pick a day (for example: 20): ")
+            hour_start = int(input("Pick a hour (for example: 17): "))
+            min_start = int(input("Pick a minute (for example: 30): "))
+            pool_size = int(input("Pick a pool size (for example: 5): "))
+            savefig = True
+            PlotAWindow(year=year, month=month, day=day, hour_start=hour_start, min_start=min_start, savefig = savefig, 
+                        pool_size=pool_size, df_center_cor = df_center_cor, full_time_matrix = full_time_matrix, batch=False)
+            print("Showing the graphs...")
+        else: 
+            break
 
 
 if __name__ == '__main__':

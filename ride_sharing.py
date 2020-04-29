@@ -299,7 +299,7 @@ class RideSharingAlgorithm:
         self.num_data = len(self.df_cor)
         self.laguardia = [40.7769, -73.874]
         
-        self.delays = 0.0 # Tolerable delay percentage
+        self.delays = 0.2 # Tolerable delay percentage
         self.possible_shares = {}   # Key is a string. For example, "001002001" means a possible ride sharing between 001 and 002, with going to 001 first. Value is the time saved. 
         
         self.apply_constraints()
@@ -494,16 +494,16 @@ class Batch:
         
 def main():
     # Pick a day and show result for that day
-    # PickADay(year="2016", month="may", day="13", hour_start=12, hour_end=24, pool_size=[5, 10], plot=True, batch=False)
+    PickADay(year="2016", month="may", day="17", hour_start=0, hour_end=24, pool_size=[5, 10], plot=True, batch=False)
     
     # Pick a range of days, calculate the result and save to csv file. This probably only need to run one or a few times. 
-    start = '2015-07-01'
-    end = '2016-06-30'
+    start = '2016-05-01'
+    end = '2016-05-31'
     poolsize = [5, 10]
-    reporttime = "days" # days or hours. 
+    reporttime = "hours" # days or hours. 
     # If in hours, the "end" parameter above should be set to the next day of the desired end date. 
     
-    Batch(start, end, poolsize, reporttime=reporttime)
+    # Batch(start, end, poolsize, reporttime=reporttime)
 
 if __name__ == '__main__':
     main()       

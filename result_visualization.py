@@ -12,14 +12,14 @@ from pathlib import Path
 
 class Hourly:
     def __init__(self, save=False):
-        self.rawdata = pd.read_csv("results_2016-05-01_to_2016-06-01_in_hours.csv")
+        self.rawdata = pd.read_csv("results_2016-05-01_to_2016-05-31_in_hours.csv")
         
         parameters = ["saved_time_pickup", "saved_rides_pickup", "saved_time_dropoff", "saved_rides_dropoff", 
         "av_per_saved_time_pickup", "av_per_saved_rides_pickup", "av_per_saved_time_dropoff", "av_per_saved_rides_dropoff",
         "av_computation_time_pickup", "av_computation_time_dropoff"]
-        parameters_names = ["Total_saved_time_from_LGA", "Total_saved_rides_from_LGA", "Total_saved_time_to_LGA", "Total_saved_rides_to_LGA",
-                            "Average_percent_of_time_saved_per_pool_from_LGA", "Average_percent_of_rides_saved_per_pool_from_LGA", 
-                            "Average_percent_of_time_saved_per_pool_to_LGA", "Average_percent_of_rides_saved_per_pool_to_LGA", 
+        parameters_names = ["Total_saved_distance_from_LGA", "Total_saved_rides_from_LGA", "Total_saved_distance_to_LGA", "Total_saved_rides_to_LGA",
+                            "Average_percent_of_distance_saved_per_pool_from_LGA", "Average_percent_of_rides_saved_per_pool_from_LGA", 
+                            "Average_percent_of_distance_saved_per_pool_to_LGA", "Average_percent_of_rides_saved_per_pool_to_LGA", 
                             "Average_computation_time_per_pool_from_LGA", "Average_computation_time_per_pool_to_LGA"]
         columns = ["Total_trips_from_LGA", "Total_trips_to_LGA"]
         # Generate the name of all columns
@@ -60,14 +60,14 @@ class Hourly:
         ax = plt.gca()
         ax2 = ax.twinx()
         self.df.plot(kind='bar',x='Hour of day',y=["Average_Daily_Trips_from_LGA", "Average_Daily_Trips_to_LGA"], color=['blue', 'red'], ax=ax)
-        self.df.plot(kind='line',x='Hour of day',y=["Average_percent_of_time_saved_per_pool_from_LGA_(5min_pool)", "Average_percent_of_time_saved_per_pool_to_LGA_(5min_pool)",
-                                            "Average_percent_of_time_saved_per_pool_from_LGA_(10min_pool)", "Average_percent_of_time_saved_per_pool_to_LGA_(10min_pool)"], 
+        self.df.plot(kind='line',x='Hour of day',y=["Average_percent_of_distance_saved_per_pool_from_LGA_(5min_pool)", "Average_percent_of_distance_saved_per_pool_to_LGA_(5min_pool)",
+                                            "Average_percent_of_distance_saved_per_pool_from_LGA_(10min_pool)", "Average_percent_of_distance_saved_per_pool_to_LGA_(10min_pool)"], 
                      color=['blue', 'red', 'orange', 'green'], ax=ax2)
         ax.set_ylabel("Average number of trips per hour")
-        ax2.set_ylabel("Average percent of time saved per pool (%)")
+        ax2.set_ylabel("Average percent of distance saved per pool (%)")
         ax.set_xlim(-0.5, 23.5)
         if save: 
-            plt.savefig('Result/Hourly_av_time_saved.png', dpi=300)
+            plt.savefig('Result/Hourly_av_distance_saved.png', dpi=300)
         else: 
             plt.show()
         plt.clf()
@@ -113,9 +113,9 @@ class Daily:
         parameters = ["saved_time_pickup", "saved_rides_pickup", "saved_time_dropoff", "saved_rides_dropoff", 
         "av_per_saved_time_pickup", "av_per_saved_rides_pickup", "av_per_saved_time_dropoff", "av_per_saved_rides_dropoff",
         "av_computation_time_pickup", "av_computation_time_dropoff"]
-        parameters_names = ["Total_saved_time_from_LGA", "Total_saved_rides_from_LGA", "Total_saved_time_to_LGA", "Total_saved_rides_to_LGA",
-                            "Average_percent_of_time_saved_per_pool_from_LGA", "Average_percent_of_rides_saved_per_pool_from_LGA", 
-                            "Average_percent_of_time_saved_per_pool_to_LGA", "Average_percent_of_rides_saved_per_pool_to_LGA", 
+        parameters_names = ["Total_saved_distance_from_LGA", "Total_saved_rides_from_LGA", "Total_saved_distance_to_LGA", "Total_saved_rides_to_LGA",
+                            "Average_percent_of_distance_saved_per_pool_from_LGA", "Average_percent_of_rides_saved_per_pool_from_LGA", 
+                            "Average_percent_of_distance_saved_per_pool_to_LGA", "Average_percent_of_rides_saved_per_pool_to_LGA", 
                             "Average_computation_time_per_pool_from_LGA", "Average_computation_time_per_pool_to_LGA"]
         columns = ["Total_trips_from_LGA", "Total_trips_to_LGA"]
         # Generate the name of all columns
@@ -157,14 +157,14 @@ class Daily:
         ax2 = ax.twinx()
         
         self.df.plot(kind='bar',x='Month',y=["Average_Daily_Trips_from_LGA", "Average_Daily_Trips_to_LGA"], color=['blue', 'red'], ax=ax)
-        self.df.plot(kind='line',x='Month',y=["Average_percent_of_time_saved_per_pool_from_LGA_(5min_pool)", "Average_percent_of_time_saved_per_pool_to_LGA_(5min_pool)",
-                                            "Average_percent_of_time_saved_per_pool_from_LGA_(10min_pool)", "Average_percent_of_time_saved_per_pool_to_LGA_(10min_pool)"], 
+        self.df.plot(kind='line',x='Month',y=["Average_percent_of_distance_saved_per_pool_from_LGA_(5min_pool)", "Average_percent_of_distance_saved_per_pool_to_LGA_(5min_pool)",
+                                            "Average_percent_of_distance_saved_per_pool_from_LGA_(10min_pool)", "Average_percent_of_distance_saved_per_pool_to_LGA_(10min_pool)"], 
                      color=['blue', 'red', 'orange', 'green'], ax=ax2)
         ax.set_xlim(-0.5, 11.5)
         ax.set_ylabel("Average number of trips per day")
-        ax2.set_ylabel("Average percent of time saved per pool (%)")
+        ax2.set_ylabel("Average percent of distance saved per pool (%)")
         if save: 
-            plt.savefig('Result/Monthly_av_time_saved.png', dpi=300)
+            plt.savefig('Result/Monthly_av_distance_saved.png', dpi=300)
         else: 
             plt.show()
         plt.clf()
@@ -261,9 +261,9 @@ class Yearly:
 
 def main():
     # Choose the minimum time unit for the visualization
-    # Hourly(save=True)
-    Daily(save=True)
-    Yearly(save=True)
+    Hourly(save=True)
+    # Daily(save=True)
+    # Yearly(save=True)
 
 
 if __name__ == '__main__':
