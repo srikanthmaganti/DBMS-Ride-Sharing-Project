@@ -11,7 +11,6 @@
   - Numpy python package
   - Matplotlib python package
   - CSV package for python
-  - New York City Map (in .pbf format) 
   
 ### GraphHopper Directions API Installation & Steps to Setup (Only needed for precomputation)
   - Unzip **graphhopper-web-0.6.0-bin.zip** file provided into the folder where python scripts will be executed 
