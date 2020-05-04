@@ -23,7 +23,7 @@
 
 
 ### How to run the code
-Below is the list of steps you can do. You can skip certain steps assuming you already have result files from those steps. Before running any code, please download all data files from Data folder here. 
+Below is the list of steps you can do. You can skip certain steps assuming you already have result files from those steps. Before running any code, please download all data files from Data folder [[here](https://uofi.box.com/s/e32xj3oerls3bsmrbkju855iqc1jbqi1)]. 
 
 #### 1. Generate Ride sharing centers
 Run Generate_centers.py, you will get a csv containing all ride sharing cluster centers. Also the code will automatically plot a New York map with all ride sharnig centers. Note: Please add Lagruadia as the first center to the csv file. 
@@ -33,7 +33,7 @@ For anyone wants to skip this step, check the result file "center_points.csv" in
 #### 2. Precompute the distance matrix between centers
 Run Precompute.py, you will get a csv file containing the ditance matrix between all ride sharing centers generated in step 1. In order to run this file, first you need to correctly setup Graphhopper local API, which is explaind above. The program will create and overwrite a csv file called "time_matrix.csv". Please notice that this step takes a very long time, approximate running time is 40+hrs. 
 
-For anyone wants to skip this step, check the result file "time_matrix.csv" shared on Box. 
+For anyone wants to skip this step, check the result file [["time_matrix.csv"](https://uofi.box.com/s/zabtnaz90jsp700l2detxe7f7ksp2rb6)] shared on Box. 
 
 #### 3. Compute ride sharing results
 
