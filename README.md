@@ -32,7 +32,7 @@ For anyone wants to skip this step, check the result file "center_points.csv" in
 #### 2. Precompute the distance matrix between centers
 Run Precompute.py, you will get a csv file containing the ditance matrix between all ride sharing centers generated in step 1. In order to run this file, first you need to correctly setup Graphhopper local API, which is explaind above. The program will create and overwrite a csv file called "time_matrix.csv". Please notice that this step takes a very long time, approximate running time is 40+hrs. 
 
-For anyone wants to skip this step, check the result file [["time_matrix.csv"](https://uofi.box.com/s/zabtnaz90jsp700l2detxe7f7ksp2rb6)] shared on Box. **You need this file to proceed**. 
+For anyone wants to skip this step, check the result file [["time_matrix.csv"](https://uofi.box.com/s/zabtnaz90jsp700l2detxe7f7ksp2rb6)] shared on Box. **You need this file to proceed**. Once you download it, please put it in the root folder.  
 
 #### 3. Compute ride sharing results
 
