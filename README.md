@@ -4,8 +4,6 @@
 
 ### Requirements
   - Python 3.5+ 
-  - MySQL Workbench 6.3
-  - MySQL connector for python
   - GraphHopper Directions API
   - Pandas python package
   - Numpy python package
